@@ -46,8 +46,6 @@ services:
        - mysql_data:/var/lib/mysql
        # 初期化用SQL実行
        - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "3307:3306"  # Host port 3307 to container port 3306
     # ヘルスチェックの設定  
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
