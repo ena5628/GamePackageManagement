@@ -1,8 +1,8 @@
 # どの階層にある node_modules もすべて除外する設定
 **/node_modules/
 **/.env
-
-fiveserver.config.js
+**/fiveserver.config.js
+**/keycloak_data/
 
 # backend/Image フォルダ内の画像を無視する
 backend/Image/*
