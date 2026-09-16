@@ -42,11 +42,6 @@ services:
   # データベース
   db:
     image: mysql:8.0
-    environment:
-      MYSQL_DATABASE: packagegame_db
-      MYSQL_USER: packagegame_user
-      MYSQL_PASSWORD: package_password
-      MYSQL_ROOT_PASSWORD: root_password
     #.envファイルの読み込み
     env_file: 
       - .env
