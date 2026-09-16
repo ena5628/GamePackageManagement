@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded',(e) =>{
 
     const gamePhoto = document.querySelector('.game-image');  // ゲーム画像
 
-    gamePhoto.src = `${CONFIG.API_BASE_URL}/images/default_image.png`;
+    gamePhoto.src = `/api/images/default_image.png`;
 
     // 共通の処理
     PlayTimeOverSolution();  // プレイ時間超過測定
@@ -226,7 +226,7 @@ const PlayTimeOverSolution = () =>{
 
 // fetchの非同期処理（insert）
 const FetchToFormInsert = async (formData) =>{
-    return await fetch(`${CONFIG.API_BASE_URL}/form/insert`, {
+    return await fetch(`/api/form/insert`, {
     method:'POST',
     body: formData
   });
@@ -252,7 +252,7 @@ const FetchToFormUpdate = async (formData) =>{
   if(oldImagePath){
     formData.append('OldImagePath',oldImagePath);
   }
-  return await fetch(`${CONFIG.API_BASE_URL}:3000/form/update`, {
+  return await fetch(`/api/form/update`, {
   method:'POST',
   body: formData
   });
@@ -368,7 +368,7 @@ const DeleteData = (gameData) =>{
 
       console.log('削除するID：' + DeleteId);  // 確認用
 
-      const response = await fetch(`${CONFIG.API_BASE_URL}/data/delete/${DeleteId}`);
+      const response = await fetch(`/api/data/delete/${DeleteId}`);
 
       const status = await response.text();
 

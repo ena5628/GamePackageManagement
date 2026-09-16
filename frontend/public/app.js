@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded',async() =>{
     const createPhoto = document.querySelector('.create-img');
 
-    createPhoto.src = `${CONFIG.API_BASE_URL}/images/create_image.png`;
+    createPhoto.src = `/api/images/create_image.png`;
 
     await ScreenReload();
 
@@ -85,7 +85,7 @@ const getUrlData = async(gameDataArr) =>{
 
     // fetchを一斉に走らせてそのPromiseをmapに格納(mapでループさせることにより結果を返す)
     const fetchPromise = gameImagePathArr.map((imagepath) =>{
-        return fetch(`${CONFIG.API_BASE_URL}/mainscreen/reload/getBinary/${imagepath}`);
+        return fetch(`/api/mainscreen/reload/getBinary/${imagepath}`);
     });
 
 
@@ -104,7 +104,7 @@ const getUrlData = async(gameDataArr) =>{
 
 // データベースからデータを取得する処理（全件取得）
 const ResponseDataAll = async() =>{
-    const responseJson = await fetch(`${CONFIG.API_BASE_URL}/mainscreen/reload/getJson/all`);  // JSONデータを取得しレスポンスを返す（全件取得）
+    const responseJson = await fetch(`/api/mainscreen/reload/getJson/all`);  // JSONデータを取得しレスポンスを返す（全件取得）
 
     const GameDataArray = await getByJsonData(responseJson);  // レスポンスしたJSONデータをオブジェクトの配列で取得
 
@@ -117,7 +117,7 @@ const ResponseDataAll = async() =>{
 // データベースからデータを取得する処理（項目データ取得）
 const ResponseDataSearch = async(filterValue) =>{
         // JSONデータを取得しレスポンスを返す（項目データ取得）
-    const responseJson = await fetch(`${CONFIG.API_BASE_URL}/mainscreen/reload/getJson/search/${filterValue}`);  
+    const responseJson = await fetch(`/api/mainscreen/reload/getJson/search/${filterValue}`);  
 
     const GameDataArray = await getByJsonData(responseJson);  // レスポンスしたJSONデータをオブジェクトの配列で取得
 
@@ -212,7 +212,7 @@ const EditGameCard = async() =>{
 
         console.log('クリックした要素のゲームID：' + gameID);  // クリックした要素のIDを確認
         
-        const responseJSON = await fetch(`${CONFIG.API_BASE_URL}/mainscreen/editCard/getJson/${gameID}`);  // IDをもとにデータベースからデータを取得
+        const responseJSON = await fetch(`/api/mainscreen/editCard/getJson/${gameID}`);  // IDをもとにデータベースからデータを取得
 
         const gameData = await getByJsonData(responseJSON);  // JSONデータをオブジェクトで取得（gameDataは配列として返る）
 
@@ -220,7 +220,7 @@ const EditGameCard = async() =>{
 
         console.log(gameImagePath);  // 画像パスを確認
 
-        const responseBinary = await fetch(`${CONFIG.API_BASE_URL}/mainscreen/reload/getBinary/${gameImagePath}`);  // 画像データを取得
+        const responseBinary = await fetch(`/api/mainscreen/reload/getBinary/${gameImagePath}`);  // 画像データを取得
 
         const url = await getByBinaryData(responseBinary);  // 画像のURLを取得
 
