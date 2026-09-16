@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded',async() =>{
     const createPhoto = document.querySelector('.create-img');
 
-    createPhoto.src = `${CONFIG.API_BASE_URL}/images/create_image.png`;
+    createPhoto.src = `/api/images/create_image.png`;
 
     await ScreenReload();
 
