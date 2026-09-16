@@ -42,11 +42,12 @@ services:
   # データベース
   db:
     image: mysql:8.0
-    #.envファイルの読み込み
     environment:
-      MYSQL_DATABASE: myapp_db
+      MYSQL_DATABASE: packagegame_db
+      MYSQL_USER: packagegame_user
+      MYSQL_PASSWORD: package_password
       MYSQL_ROOT_PASSWORD: root_password
-
+    #.envファイルの読み込み
     env_file: 
       - .env
     # MYSQLデータの永続化
@@ -56,10 +57,11 @@ services:
        - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     # ヘルスチェックの設定  
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 30s
 # 永続化ボリュームを定義
 volumes:
   mysql_data:  # MySQLデータの永続化

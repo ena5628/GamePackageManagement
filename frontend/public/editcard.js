@@ -51,7 +51,7 @@ const inputGameData = (gameData) => {
     if (gameData.game_image_path) {
     GameImage.src = `/api/mainscreen/reload/getBinary/${gameData.game_image_path}`;
     } else {
-        GameImage.src = "./Image/default_image.png"; // 画像がない場合の予備
+        GameImage.src = "/api/Image/default_image.png"; // 画像がない場合の予備
     }
 
     // フォームの入力要素を取得
