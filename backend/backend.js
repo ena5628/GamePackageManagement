@@ -19,32 +19,36 @@ app.use(cors({
         ]
 }));
 
-
 app.use(express.static(path.join(__dirname,'..','public')));  // 静的ファイル置き場の公開
-app.use('/images',express.static(path.join(__dirname, 'Image')));
+app.use('/api/images',express.static(path.join(__dirname, 'Image')));
 
 // 送信できる容量を制限
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // mysqlとの接続情報を登録
-const connection = mysql.createConnection({
-    host:process.env.DB_HOST,
-    user:process.env.DB_USER,
-    password:process.env.DB_PASSWORD,
-    database:process.env.DB_NAME,
-
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
 });
 
 // データベース接続確認処理
-connection.connect((err) =>{
-    if(err) {
-        console.log('error connecting' + err.stack);
-        return;
-    }
+const connectWithRetry = () => {
+    pool.query('SELECT 1', (err) => {
+        if (err) {
+            console.log('DB接続失敗、3秒後に再試行...');
+            setTimeout(connectWithRetry, 3000);
+        } else {
+            console.log('DB接続成功');
+        }
+    });
+};
 
-    console.log('success');  // 接続成功
-});
+connectWithRetry();
 
 
 // 古い画像をフォルダから削除する処理
@@ -139,7 +143,7 @@ const sharedGameFormHandle = async (req,res,query,successComment,uploadPath) =>{
 
 
     // クエリ実行
-    connection.query(query,values, (err,results) =>{
+    pool.query(query,values, (err,results) =>{
         if(err){
             console.error("データを追加できませんでした：" + err);
             return res.status(500).send("エラーが発生しました");  // ステータスコードを返す
@@ -160,7 +164,7 @@ const uploadPath = path.join(__dirname,'Image');
 
 const image = multer({dest:uploadPath});   // 画像の保存先を指定
 // 新規登録処理
-app.post('/form/insert', image.any(),(req,res) =>{
+app.post('/api/form/insert', image.any(),(req,res) =>{
 
     const insert_query = `INSERT INTO package_game 
                    (game_title,platform,play_date,play_status,play_time_minutes,review,star_level,game_image_path)
@@ -172,7 +176,7 @@ app.post('/form/insert', image.any(),(req,res) =>{
 });
 
 // 更新処理
-app.post('/form/update',image.any(),(req,res) =>{
+app.post('/api/form/update',image.any(),(req,res) =>{
 
     const update_query = `UPDATE package_game
                           SET game_title=?, platform=?, play_date=?, play_status=?, play_time_minutes=?,review=?, star_level=?, game_image_path=?
@@ -184,12 +188,12 @@ app.post('/form/update',image.any(),(req,res) =>{
 
 
 // データベースからJSONデータを取得する処理（全件取得）
-app.get('/mainscreen/reload/getJson/all',(req,res) => {
+app.get('/api/mainscreen/reload/getJson/all',(req,res) => {
     
     const select_all_query = 'select * from package_game';  // 全件取得
     
     // クエリ実行
-    connection.query(select_all_query,(err,results) =>{
+    pool.query(select_all_query,(err,results) =>{
         if(err){
             console.error(err);
             return res.status(500).send('DBエラー');
@@ -203,7 +207,7 @@ app.get('/mainscreen/reload/getJson/all',(req,res) => {
 });
 
 // データベースからJSONデータを取得する処理（送られてきた項目データの取得）
-app.get('/mainscreen/reload/getJson/search/:filterValue',(req,res) =>{
+app.get('/api/mainscreen/reload/getJson/search/:filterValue',(req,res) =>{
 
     const filter = req.params.filterValue;
 
@@ -212,7 +216,7 @@ app.get('/mainscreen/reload/getJson/search/:filterValue',(req,res) =>{
     const select_search_query = `select * from package_game where platform = ?`;  // 項目データの取得
 
     // クエリ実行
-    connection.query(select_search_query,filter,(err,results) =>{
+    pool.query(select_search_query,filter,(err,results) =>{
         if(err){
             console.error(err);
             return res.status(500).send('DBエラー');
@@ -226,7 +230,7 @@ app.get('/mainscreen/reload/getJson/search/:filterValue',(req,res) =>{
 
 
 // サーバーから画像データを受け取り呼び出し元に返す処理
-app.get('/mainscreen/reload/getBinary/:imagepath',(req,res) => {
+app.get('/api/mainscreen/reload/getBinary/:imagepath',(req,res) => {
     const fileName = req.params.imagepath;  // URLの末尾の動的なパラメータ（imagepath）を取得
     console.log(fileName);// ファイル取得できたかチェック
 
@@ -237,12 +241,12 @@ app.get('/mainscreen/reload/getBinary/:imagepath',(req,res) => {
 
 
 // データベースからデータを取得（特定のIDデータ）
-app.get('/mainscreen/editCard/getJson/:gameID',(req,res) => {
+app.get('/api/mainscreen/editCard/getJson/:gameID',(req,res) => {
     const params = req.params.gameID;  // URLの末尾の動的なパラメータを取得
 
     const select_query = 'select * from package_game where game_id = ?';  // プレースホルダでセキュリティ対策
 
-    connection.query(select_query,params,(err,result) =>{
+    pool.query(select_query,params,(err,result) =>{
         if(err){
             console.error(err);
             return res.status(500).send('DBエラー');
@@ -255,7 +259,7 @@ app.get('/mainscreen/editCard/getJson/:gameID',(req,res) => {
 
 
 // データベースからデータを削除（特定のIDデータ）
-app.get('/data/delete/:gameId',(req,res) =>{
+app.get('/api/data/delete/:gameId',(req,res) =>{
     const gameId = req.params.gameId;  // URLパラメータからgameIdを取得
 
     console.log('削除するID：' + gameId);  // 確認用
@@ -264,7 +268,7 @@ app.get('/data/delete/:gameId',(req,res) =>{
     const select_query = 'select game_image_path from package_game where game_id = ?';  // プレースホルダでセキュリティ対策
 
     // クエリ実行
-    connection.query(select_query,gameId,(err,result) =>{
+    pool.query(select_query,gameId,(err,result) =>{
         if(err){
             console.error(err);
             return res.status(500).send('DBエラー:' + err);
@@ -288,7 +292,7 @@ app.get('/data/delete/:gameId',(req,res) =>{
         const delete_query = `DELETE FROM package_game WHERE game_id = ?`;
 
         // クエリ実行
-        connection.query(delete_query,gameId,async(err,result) =>{
+        pool.query(delete_query,gameId,async(err,result) =>{
             if(err){
                 console.error(err);
                 return res.status(500).send('DBエラー:' + err);
