@@ -1,5 +1,7 @@
 
 const express = require("express");  // expressパッケージの読み込み
+const session = require('express-session'); // express-sessionパッケージの読み込み
+const Keycloak = require('keycloak-connect'); // keycloak-connectパッケージの読み込み
 const mysql = require("mysql2");     // mysql2パッケージの読み込み
 const multer = require("multer");    // multerの読み込み（ファイルデータをリクエストで受け取る）
 const cors = require("cors");        // corsの読み込み（保護用ブロック解除を許可）
@@ -7,6 +9,23 @@ require('dotenv').config();          // .envファイルの読み込み
 const path = require("path");        
 const fs = require('fs');            // fsパッケージの読み込み
 const app = express();
+
+// memoryとして保存(セッションストアの作成)
+const memoryStore = new session.MemoryStore();  
+
+// sessionIDの生成とcokieとしてブラウザに保存する処理
+app.use(session({
+    secret: 'your-secret-key',  // セッションの秘密鍵
+    resave: false,
+    saveUninitialized: true,
+    store: memoryStore,          // セッションストアを指定
+}));
+
+// keycloakにも同じmemoryStoreを指定(共有)
+const keycloak = new Keycloak({ store: memoryStore });
+
+// session確認（なければkeycloakにリダイレクト）
+app.use(keycloak.middleware());
 
 app.use(express.static(path.join(__dirname,'..','public')));  // 静的ファイル置き場の公開
 app.use('/api/images',express.static(path.join(__dirname, 'Image')));
