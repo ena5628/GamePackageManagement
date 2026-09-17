@@ -21,12 +21,18 @@ app.use(session({
     store: memoryStore,          // セッションストアを指定
 }));
 
+
 // keycloakにも同じmemoryStoreを指定(共有)
 const keycloak = new Keycloak({ store: memoryStore });
 
-// session確認（なければkeycloakにリダイレクト）
+// Keycloakの機能をExpress全体に組み込む
 app.use(keycloak.middleware());
 
+// keycloakで保護されたapi検証（ログ確認用）
+// keycloak.protect()でsession確認（なければkeycloakにリダイレクト）
+app.get('/api/user', keycloak.protect(), (req, res) => {
+  res.json({ message: 'ログイン済みだけOK' });
+});
 
 app.use(express.static(path.join(__dirname,'..','public')));  // 静的ファイル置き場の公開
 app.use('/api/images',express.static(path.join(__dirname, 'Image')));
