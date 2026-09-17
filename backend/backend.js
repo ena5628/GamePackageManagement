@@ -9,6 +9,14 @@ require('dotenv').config();          // .envファイルの読み込み
 const path = require("path");        
 const fs = require('fs');            // fsパッケージの読み込み
 const app = express();
+app.set('trust proxy', true);
+
+app.use(express.static(path.join(__dirname,'..','public')));  // 静的ファイル置き場の公開
+app.use('/api/images',express.static(path.join(__dirname, 'Image')));
+
+// 送信できる容量を制限
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // memoryとして保存(セッションストアの作成)
 const memoryStore = new session.MemoryStore();  
@@ -23,23 +31,26 @@ app.use(session({
 
 
 // keycloakにも同じmemoryStoreを指定(共有)
-const keycloak = new Keycloak({ store: memoryStore });
+const keycloak = new Keycloak({ store: memoryStore }, {
+  realm: "my-app",
+  "auth-server-url": "/auth/",
+  resource: "my-app-client",
+  "public-client": true
+});
 
 // Keycloakの機能をExpress全体に組み込む
 app.use(keycloak.middleware());
 
-// keycloakで保護されたapi検証（ログ確認用）
 // keycloak.protect()でsession確認（なければkeycloakにリダイレクト）
-app.get('/api/user', keycloak.protect(), (req, res) => {
-  res.json({ message: 'ログイン済みだけOK' });
+app.get('/', keycloak.protect(), (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
-app.use(express.static(path.join(__dirname,'..','public')));  // 静的ファイル置き場の公開
-app.use('/api/images',express.static(path.join(__dirname, 'Image')));
+// // keycloakで保護されたapi検証（ログ確認用）
+// app.get('/api/user', keycloak.protect(), (req, res) => {
+//     res.json({ message: 'ログイン済みだけOK' });
+// });
 
-// 送信できる容量を制限
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // mysqlとの接続情報を登録
 const pool = mysql.createPool({

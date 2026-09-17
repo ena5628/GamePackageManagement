@@ -1,6 +1,10 @@
 'use strict';
 //起動時に実行
 document.addEventListener('DOMContentLoaded',async() =>{
+    // const response = await fetch('/api/user');  // ログイン済みか確認するAPIを叩く
+    
+    // console.log('ログイン済みか確認するAPIのレスポンス：' + response);
+
     const createPhoto = document.querySelector('.create-img');
 
     createPhoto.src = `/api/images/create_image.png`;
