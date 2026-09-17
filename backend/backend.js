@@ -27,6 +27,7 @@ const keycloak = new Keycloak({ store: memoryStore });
 // session確認（なければkeycloakにリダイレクト）
 app.use(keycloak.middleware());
 
+
 app.use(express.static(path.join(__dirname,'..','public')));  // 静的ファイル置き場の公開
 app.use('/api/images',express.static(path.join(__dirname, 'Image')));
 
