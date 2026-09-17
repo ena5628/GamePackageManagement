@@ -15,7 +15,7 @@ const memoryStore = new session.MemoryStore();
 
 // sessionIDの生成とcokieとしてブラウザに保存する処理
 app.use(session({
-    secret: 'your-secret-key',  // セッションの秘密鍵
+    secret: process.env.SESSION_SECRET,  // セッションの秘密鍵
     resave: false,
     saveUninitialized: true,
     store: memoryStore,          // セッションストアを指定
