@@ -34,10 +34,10 @@ app.use(session({
         // トークンを発行するサーバーのURL（KeycloakのURL）
         issuer: "http://localhost/auth/realms/my-app",
 
-        // 👇ブラウザ用（localhost）
+        // ブラウザ用（localhost）
         authorization_endpoint: "http://localhost/auth/realms/my-app/protocol/openid-connect/auth",
 
-        // 👇サーバー内部通信（keycloak）
+        // サーバー内部通信（keycloak）
         token_endpoint: "http://keycloak:8080/auth/realms/my-app/protocol/openid-connect/token",
         userinfo_endpoint: "http://keycloak:8080/auth/realms/my-app/protocol/openid-connect/userinfo",
         jwks_uri: "http://keycloak:8080/auth/realms/my-app/protocol/openid-connect/certs",
@@ -76,7 +76,12 @@ app.use(session({
       // トークンをセッションに保存する
       req.session.tokenSet = tokenSet;
 
-      res.redirect("/");
+      // ユーザー情報を取得し、セッションに保存する
+      const userId = tokenSet.claims().sub;
+      req.session.userId = userId;
+      console.log("ユーザーID（セッションに保存）：" + userId);
+
+      res.redirect("/");  // フロントエンドにリダイレクト
     } catch (err) {
       console.error("callback error FULL:", err);
       console.error("message:", err.message);
@@ -87,6 +92,9 @@ app.use(session({
 
   // 保護ページ
   app.get("/", (req, res) => {
+    console.log("backend通ったよ");
+    console.log("session:", req.session);
+
     // ログインしていない場合はログインページにリダイレクト
     if (!req.session.tokenSet) {
       return res.redirect("/login");
@@ -163,7 +171,7 @@ const checkOtherData = (ImagePath, GameId =null) => {
 
 
 // insert,update共通部分
-const sharedGameFormHandle = async (req,res,query,successComment,uploadPath) =>{
+const sharedGameFormHandle = async (req,res,query,successComment,uploadPath,action) =>{
     
     // console.log(uploadPath);
     // リクエストで受け取った値たち
@@ -178,6 +186,10 @@ const sharedGameFormHandle = async (req,res,query,successComment,uploadPath) =>{
     const playTImeMinute = hour + minutes;
     const review = req.body.Review.trim();
     const starLevel = req.body.RecommendedLevel;
+
+    // ユーザー情報を取得する
+    const userId = req.session.userId;
+    console.log('ユーザーID（更新/削除）：' + userId);  // 確認用
 
     // 確認用
     console.log('受け取った値：' + req.body.PlayStatus + ' ' + req.body.PlayTimeHour + ' ' + req.body.PlayTimeMinute + ' ' + playTImeMinute);
@@ -209,12 +221,25 @@ const sharedGameFormHandle = async (req,res,query,successComment,uploadPath) =>{
         gameImagePath = "default_image.png";  // デフォルトの画像を設定
     }
 
-    // パラメータ
-    const values = [gameTitle,platform,playDate,playStatus,playTImeMinute,review,starLevel,gameImagePath];
+    let values = [];  // プレースホルダに渡す値を格納する配列
 
-    // game_idがある場合（update用）
-    if(req.body.GameId){
-        values.push(req.body.GameId);
+    // actionの値によって処理を分岐
+    if(action === 'insert'){
+        // パラメータ
+        values = [userId,gameTitle,platform,playDate,playStatus,playTImeMinute,review,starLevel,gameImagePath];
+
+    }
+    else if(action === 'update'){
+        // パラメータ
+        values = [gameTitle,platform,playDate,playStatus,playTImeMinute,review,starLevel,gameImagePath,userId];
+
+        // game_idがある場合（update用）
+        if(req.body.GameId){
+            values.push(req.body.GameId);
+        }
+        else{
+            return res.status(400).send("game_idが指定されていません");
+        }
     }
 
 
@@ -243,11 +268,11 @@ const image = multer({dest:uploadPath});   // 画像の保存先を指定
 app.post('/api/form/insert', image.any(),(req,res) =>{
 
     const insert_query = `INSERT INTO package_game 
-                   (game_title,platform,play_date,play_status,play_time_minutes,review,star_level,game_image_path)
-                   VALUES (?,?,?,?,?,?,?,?)`;  // プレースホルダでセキュリティ対策
+                   (user_id,game_title,platform,play_date,play_status,play_time_minutes,review,star_level,game_image_path)
+                   VALUES (?,?,?,?,?,?,?,?,?)`;  // プレースホルダでセキュリティ対策
     
     // 共通部分の呼び出し（クエリ実行）
-    sharedGameFormHandle(req,res,insert_query,"データを登録しました",uploadPath);
+    sharedGameFormHandle(req,res,insert_query,"データを登録しました",uploadPath,'insert');
 
 });
 
@@ -256,20 +281,23 @@ app.post('/api/form/update',image.any(),(req,res) =>{
 
     const update_query = `UPDATE package_game
                           SET game_title=?, platform=?, play_date=?, play_status=?, play_time_minutes=?,review=?, star_level=?, game_image_path=?
-                          WHERE game_id=?`;
+                          WHERE user_id=? AND game_id=?`;
 
     // 共通部分の呼び出し（クエリ実行）
-    sharedGameFormHandle(req,res,update_query,"データを更新しました",uploadPath);
+    sharedGameFormHandle(req,res,update_query,"データを更新しました",uploadPath,'update');
 });
 
 
 // データベースからJSONデータを取得する処理（全件取得）
-app.get('/api/mainscreen/reload/getJson/all',(req,res) => {
-    
-    const select_all_query = 'select * from package_game';  // 全件取得
+app.get('/api/mainscreen/reload/getJson/all',async (req,res) => {
+
+    const userId = req.session.userId;
+    console.log('ユーザーID（全件取得）：' + userId);  // 確認用
+
+    const select_all_query = 'select * from package_game where user_id = ?';  // 全件取得
     
     // クエリ実行
-    pool.query(select_all_query,(err,results) =>{
+    pool.query(select_all_query,[userId],(err,results) =>{
         if(err){
             console.error(err);
             return res.status(500).send('DBエラー');
@@ -285,14 +313,18 @@ app.get('/api/mainscreen/reload/getJson/all',(req,res) => {
 // データベースからJSONデータを取得する処理（送られてきた項目データの取得）
 app.get('/api/mainscreen/reload/getJson/search/:filterValue',(req,res) =>{
 
+    const userId = req.session.userId; //userIdを取得
+
     const filter = req.params.filterValue;
+
+    const values = [userId,filter];  // プレースホルダに渡す値を配列で指定
 
     console.log('Searchする値：' + filter);
 
-    const select_search_query = `select * from package_game where platform = ?`;  // 項目データの取得
+    const select_search_query = `select * from package_game where user_id = ? AND platform = ?`;  // 項目データの取得
 
     // クエリ実行
-    pool.query(select_search_query,filter,(err,results) =>{
+    pool.query(select_search_query,values,(err,results) =>{
         if(err){
             console.error(err);
             return res.status(500).send('DBエラー');
