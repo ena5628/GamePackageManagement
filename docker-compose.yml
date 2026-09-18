@@ -76,6 +76,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
+    command: start-dev 
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -83,11 +84,11 @@ services:
       KC_DB_URL_HOST: keycloak-db
       KC_DB_USERNAME: ${KC_DB_USERNAME}
       KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KC_PROXY_HEADERS: xforwarded
       KC_HOSTNAME: localhost
-      KC_HOSTNAME_PORT: 80
+      # KC_HOSTNAME_PORT: 80
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_RELATIVE_PATH: /auth
-    command: start-dev 
     depends_on:
       keycloak-db:
         condition: service_healthy

@@ -1,7 +1,7 @@
 
 const express = require("express");  // expressパッケージの読み込み
 const session = require('express-session'); // express-sessionパッケージの読み込み
-const Keycloak = require('keycloak-connect'); // keycloak-connectパッケージの読み込み
+const { Issuer } = require("openid-client");
 const mysql = require("mysql2");     // mysql2パッケージの読み込み
 const multer = require("multer");    // multerの読み込み（ファイルデータをリクエストで受け取る）
 const cors = require("cors");        // corsの読み込み（保護用ブロック解除を許可）
@@ -23,33 +23,83 @@ const memoryStore = new session.MemoryStore();
 
 // sessionIDの生成とcokieとしてブラウザに保存する処理
 app.use(session({
-    secret: process.env.SESSION_SECRET,  // セッションの秘密鍵
-    resave: false,
-    saveUninitialized: true,
-    store: memoryStore,          // セッションストアを指定
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: memoryStore   // ← 追加
 }));
 
+(async () => {
+    const issuer = new Issuer({
+        // トークンを発行するサーバーのURL（KeycloakのURL）
+        issuer: "http://localhost/auth/realms/my-app",
 
-// keycloakにも同じmemoryStoreを指定(共有)
-const keycloak = new Keycloak({ store: memoryStore }, {
-  realm: "my-app",
-  "auth-server-url": "/auth/",
-  resource: "my-app-client",
-  "public-client": true
-});
+        // 👇ブラウザ用（localhost）
+        authorization_endpoint: "http://localhost/auth/realms/my-app/protocol/openid-connect/auth",
 
-// Keycloakの機能をExpress全体に組み込む
-app.use(keycloak.middleware());
+        // 👇サーバー内部通信（keycloak）
+        token_endpoint: "http://keycloak:8080/auth/realms/my-app/protocol/openid-connect/token",
+        userinfo_endpoint: "http://keycloak:8080/auth/realms/my-app/protocol/openid-connect/userinfo",
+        jwks_uri: "http://keycloak:8080/auth/realms/my-app/protocol/openid-connect/certs",
+    });
 
-// keycloak.protect()でsession確認（なければkeycloakにリダイレクト）
-app.get('/', keycloak.protect(), (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
-});
+  const client = new issuer.Client({
+    client_id: "my-app-client",
+    redirect_uris: ["http://localhost/callback"],
+    response_types: ["code"],
+    token_endpoint_auth_method: "none",  // public clientの場合はnoneを指定
+  });
 
-// // keycloakで保護されたapi検証（ログ確認用）
-// app.get('/api/user', keycloak.protect(), (req, res) => {
-//     res.json({ message: 'ログイン済みだけOK' });
-// });
+  // ログイン開始
+  app.get("/login", (req, res) => {
+    // keycloakのログインURLを生成し、リダイレクトする
+    const url = client.authorizationUrl({
+      scope: "openid profile email",
+    });
+    res.redirect(url);
+  });
+
+  // コールバック
+  app.get("/callback", async (req, res) => {
+    try {
+      const params = client.callbackParams(req);
+
+      // コールバック処理を行い、トークンを取得する
+      const tokenSet = await client.callback(
+        "http://localhost/callback",
+          params,
+          {
+            issuer: "http://localhost:8080/auth/realms/my-app"  // KeycloakのIssuer URLを指定
+          }
+      );
+
+      // トークンをセッションに保存する
+      req.session.tokenSet = tokenSet;
+
+      res.redirect("/");
+    } catch (err) {
+      console.error("callback error FULL:", err);
+      console.error("message:", err.message);
+      console.error("stack:", err.stack);
+      res.send("ログイン失敗: " + JSON.stringify(err));
+    }
+  });
+
+  // 保護ページ
+  app.get("/", (req, res) => {
+    // ログインしていない場合はログインページにリダイレクト
+    if (!req.session.tokenSet) {
+      return res.redirect("/login");
+    }
+    
+    console.log("ログイン成功");
+    //  フロントに投げる
+    res.redirect("/frontend");
+
+  });
+
+})();
+
 
 
 // mysqlとの接続情報を登録
