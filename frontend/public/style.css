@@ -32,12 +32,87 @@ p {
 }
 
 .header {
-    width: 100%;
     position: sticky;
     top: 0;
+    width: 100%;
     margin: 0;
     padding: 0;
     z-index: 1000;
+    /* position: relative;  基準   */
+}
+
+.gamepackage-nav {
+
+}
+
+.header-top {
+    /* display: flex; */
+    /* justify-content: space-between;
+    align-items: center;
+    padding: 0 20px; */
+}
+
+.logout-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+
+    font-size: 16px;
+    z-index: 1001;
+}
+
+/* ホバー */
+.logout-btn:hover {
+    background: #ff4b4b;
+}
+
+.logout-btn.dark {
+    background: #747474;
+}
+
+/* ホバー */
+.logout-btn.dark:hover {
+    background: #ff4b4b;
+}
+
+
+.scroll-top {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 1002;
+}
+
+.scroll-top.show {
+    opacity: 1;
 }
 
 nav {
@@ -46,9 +121,10 @@ nav {
     text-align: center;
 }
 
-nav .headerTitle {
+.header-top .headerTitle {
     margin: 0;
     padding:20px 0;
+    padding-right: 110px;
     text-align: center;
     font-size: 34px;
     color: whitesmoke;
@@ -93,7 +169,7 @@ nav.scrolled {
     left: 0;
     z-index: 9999;
     background-color: rgb(0, 0, 0);
-    display: flex;
+    /* display: flex; */
     justify-content: center; /* 中央寄せを維持 */
     align-items: center;
     padding: 5px 3%; 
@@ -220,10 +296,10 @@ nav.scrolled .nav-item {
 
 /* レスポンシブ対応 */
 @media (max-width: 395px) {
-    nav .headerTitle {
+    .header-top .headerTitle {
         font-size: 20px;
     }
-    nav .nav-item .nav-label {
+    .header-top .nav-item .nav-label {
         font-size: 14px;
     }
     nav.scrolled .headerTitle {
@@ -235,10 +311,10 @@ nav.scrolled .nav-item {
 
 }
 @media (min-width: 396px) and  (max-width: 480px) {
-    nav .headerTitle {
+    .header-top .headerTitle {
         font-size: 22px;
     }
-    nav .nav-item .nav-label {
+    .header-top .nav-item .nav-label {
         font-size: 16px;
     }
     nav.scrolled .headerTitle {
@@ -251,7 +327,7 @@ nav.scrolled .nav-item {
 }
 
 @media (min-width: 481px) and (max-width: 530px) {
-    nav .headerTitle {
+    .header-top .headerTitle {
         font-size: 24px;
     }
     nav .nav-item .nav-label {
@@ -267,7 +343,7 @@ nav.scrolled .nav-item {
 }
 
 @media (min-width: 531px) and (max-width: 740px) {
-    nav .headerTitle {
+    .header-top .headerTitle {
         font-size: 26px;
     }
     nav .nav-item .nav-label {

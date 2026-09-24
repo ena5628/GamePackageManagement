@@ -246,19 +246,40 @@ const HeaderAnimation = () =>{
     const nav = document.querySelector('.gamepackage-nav');  // gamepackage-navクラスの要素を取得
     const ul = document.querySelector('.nav-inner');  // nav-innerクラスの要素を取得
 
+    const logoutBtn = document.querySelector(".logout-btn");
+    const topBtn = document.querySelector(".scroll-top");
 
-    // スクロールイベントを追加（headerがulタグの位置に来たらヘッダーを固定）
-    window.addEventListener('scroll',() =>{
+    // ulタグの位置を取得
+    const triggerPoint = ul.offsetTop;
 
-        if(window.pageYOffset >= ul.offsetTop){  // スクロール位置がulタグの位置より大きい場合
-            nav.classList.add('scrolled');  // scrolledクラスを追加
+let isScrolled = false;
+
+    window.addEventListener('scroll', () => {
+
+        if (!isScrolled && window.pageYOffset > triggerPoint + 5) {
+            nav.classList.add('scrolled');
+            logoutBtn.classList.add("dark");
+            topBtn.classList.add("show");
+            isScrolled = true;
+
+        } else if (isScrolled && window.pageYOffset < triggerPoint - 5) {
+            nav.classList.remove('scrolled');
+            logoutBtn.classList.remove("dark");
+            topBtn.classList.remove("show");
+            isScrolled = false;
         }
-        else{
-            console.log('elseブロックに入りました');
-            nav.classList.remove('scrolled');  // scrolledクラスを削除
-        }
+
     });
+
 }
+
+// スクロールトップボタンをクリックしたらページの先頭に戻る処理
+document.querySelector(".scroll-top").addEventListener("click", () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+});
 
 
 // headerの項目をクリックしたら絞り込みする処理
