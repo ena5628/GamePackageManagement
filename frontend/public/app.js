@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded',async() =>{
 
     HeaderAnimation();  // ヘッダーのアニメーションイベントの実行
 
+    LogoutBtn();  // ログアウトイベントの実行
+
     EditGameCard();  // ゲームカード編集イベントの実行
 
     FilterGamecCard();  // ゲームカード絞り込みイベントの実行
@@ -252,7 +254,7 @@ const HeaderAnimation = () =>{
     // ulタグの位置を取得
     const triggerPoint = ul.offsetTop;
 
-let isScrolled = false;
+    let isScrolled = false;
 
     window.addEventListener('scroll', () => {
 
@@ -280,6 +282,20 @@ document.querySelector(".scroll-top").addEventListener("click", () => {
     behavior: "smooth"
   });
 });
+
+// ログアウトボタンをクリックしたらログアウトする処理
+const LogoutBtn = () => {
+    const logoutBtn = document.querySelector(".logout-btn");
+
+    logoutBtn.addEventListener("click", () => {
+        if (confirm("ログアウトしますか？")) {
+            window.location.href = "/api/logout";
+        }
+    });
+};
+
+
+
 
 
 // headerの項目をクリックしたら絞り込みする処理

@@ -76,6 +76,8 @@ app.use(session({
 
       // トークンをセッションに保存する
       req.session.tokenSet = tokenSet;
+      console.log("保存前tokenSet:", tokenSet);
+      console.log("保存後session:", req.session);
 
       // ユーザー情報を取得し、セッションに保存する
       const userId = tokenSet.claims().sub;
@@ -112,9 +114,32 @@ app.use(session({
 
 // ログアウト処理
 app.get("/api/logout", (req, res) => {
-  req.session.destroy(() => {
+  console.log("ログアウト処理開始");
+
+  // ① 先にトークン取得
+  const idToken = req.session?.tokenSet?.id_token;
+  console.log("idToken:", idToken);
+
+  // ② KeycloakログアウトURL作成（idTokenあれば付与）
+  let keycloakLogoutUrl =
+    "http://localhost:8080/auth/realms/my-app/protocol/openid-connect/logout" +
+    "?post_logout_redirect_uri=http://localhost";
+
+  if (idToken) {
+    keycloakLogoutUrl += `&id_token_hint=${idToken}`;
+  }
+
+  // ③ セッション削除
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("session destroy error:", err);
+      return res.status(500).send("logout error");
+    }
+
     res.clearCookie("connect.sid");
-    res.redirect("/");
+
+    // ④ 最後にKeycloakへリダイレクト
+    res.redirect(keycloakLogoutUrl);
   });
 });
 
