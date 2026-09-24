@@ -33,17 +33,17 @@ p {
 
 .header {
     width: 100%;
-    height: 150px;
+    position: sticky;
+    top: 0;
     margin: 0;
     padding: 0;
-    z-index: 99999;
+    z-index: 1000;
 }
 
 nav {
     width: 100%;
     padding: 0px 0;
     text-align: center;
-
 }
 
 nav .headerTitle {
@@ -88,7 +88,7 @@ nav .nav-inner .nav-item .nav-label:hover {
 
 /* スクロール時のナビゲーション */
 nav.scrolled {
-    position: fixed;  /* スクロール時に固定 */
+    /* position: fixed;  スクロール時に固定 */
     top: 0;
     left: 0;
     z-index: 9999;
@@ -121,11 +121,11 @@ nav.scrolled .nav-item {
 }
 
 /* ゲームカード全体 */
-.game-card{
-    display: flex;
-    flex-wrap:wrap;
-    gap: 35px;
-    padding: 20px 24px;
+.game-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 20px;
 }
 
 .hidden {
@@ -143,6 +143,7 @@ nav.scrolled .nav-item {
     width: 100%;             /* スマホ：幅いっぱい */
     max-width: 270px;
     height: 332px;
+    margin: 0 auto;  /* 追加 */
     border: 2px solid #ddd;
     border-radius: 6px;
     overflow: hidden;
@@ -231,15 +232,7 @@ nav.scrolled .nav-item {
     nav.scrolled .nav-item .nav-label {
         font-size: 10px;
     }
-    .header {
-        height: 200px; /* ヘッダー自体を少し低くしてスペースを確保 */
-    }
-    .card-blog-a { 
-        zoom: 0.5; /* さらに縮小してカードを画面に収める */
-    }
-    .game-card {
-        gap:20px;
-    }
+
 }
 @media (min-width: 396px) and  (max-width: 480px) {
     nav .headerTitle {
@@ -254,15 +247,7 @@ nav.scrolled .nav-item {
     nav.scrolled .nav-item .nav-label {
         font-size: 11px;
     }
-    .header {
-        height:195px;
-    }
-    .card-blog-a { 
-        zoom: 0.57; /* これだけでサイズと余白が両方縮まる */
-    }
-    .game-card {
-        gap:20px;
-    }
+
 }
 
 @media (min-width: 481px) and (max-width: 530px) {
@@ -278,15 +263,7 @@ nav.scrolled .nav-item {
     nav.scrolled .nav-item .nav-label {
         font-size: 14px;
     }
-    .header {
-        height:185px;
-    }
-    .card-blog-a { 
-        zoom: 0.7; /* これだけでサイズと余白が両方縮まる */
-    }
-    .game-card {
-        gap:25px;
-    }
+
 }
 
 @media (min-width: 531px) and (max-width: 740px) {
@@ -302,14 +279,7 @@ nav.scrolled .nav-item {
     nav.scrolled .nav-item .nav-label {
         font-size: 16px;
     }
-    .header {
-        height:180px;
-    }
-    .card-blog-a { 
-        zoom: 0.75; 
-    }
-    .game-card {
-        gap:30px;
-    }
+
+
 }
 
