@@ -52,6 +52,7 @@ app.use(session({
 
   // ログイン開始
   app.get("/login", (req, res) => {
+    console.log("ログイン開始");
     // keycloakのログインURLを生成し、リダイレクトする
     const url = client.authorizationUrl({
       scope: "openid profile email",
@@ -107,6 +108,15 @@ app.use(session({
   });
 
 })();
+
+
+// ログアウト処理
+app.get("/api/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.clearCookie("connect.sid");
+    res.redirect("/");
+  });
+});
 
 
 
