@@ -202,6 +202,7 @@ nav.scrolled .nav-item {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
     padding: 20px;
+    justify-content: start;  /* ← これ追加 */
 }
 
 .hidden {
@@ -219,7 +220,7 @@ nav.scrolled .nav-item {
     width: 100%;             /* スマホ：幅いっぱい */
     max-width: 270px;
     height: 332px;
-    margin: 0 auto;  /* 追加 */
+    /* margin: 0 auto;  追加 */
     border: 2px solid #ddd;
     border-radius: 6px;
     overflow: hidden;

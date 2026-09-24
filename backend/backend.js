@@ -188,7 +188,7 @@ const checkOtherData = (ImagePath, GameId =null) => {
     return new Promise((resolve, reject) => {
         const select_query = 'select COUNT(*) as count from package_game where game_image_path = ?';  // プレースホルダでセキュリティ対策
 
-        connection.query(select_query,ImagePath,(err,result) =>{
+        pool.query(select_query,ImagePath,(err,result) =>{
             if(err){
                 console.error(err);
                 reject(err);
