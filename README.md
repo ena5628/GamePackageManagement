@@ -41,6 +41,9 @@
 - express-session : ユーザーごとのログイン状態などの情報をサーバー側で一時的に保持するために使用（セッション管理）
 - openid-client : OpenID Connectに対応した認証クライアントライブラリで、Keycloakと連携してログイン認証を実装するために使用
 
+## 構成図
+<img src="backend/Image/gamepackage.drawio.png">
+
 ## 機能
 - ユーザー認証機能
 - ゲーム一覧表示
