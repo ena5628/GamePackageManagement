@@ -147,3 +147,6 @@ docker-composeを用いてフロントエンド・バックエンド・データ
 最終的にはAmazon ECS + Fargetを使用し、運用上の負担を軽減していく必要があると考えています。
 
 DBについてもRDSに移行、画像データもサーバー上のEBSボリューム内に保存するのではなくS3に保存・取り出しする処理に変更する必要があります。
+
+## 参考資料
+- [WindowsでDockerをインストールする方法（Qiita）](https://qiita.com/tatsuya-tamura-business/items/7356508137ece45caca4)
