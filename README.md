@@ -82,7 +82,7 @@ docker compose up -d --build
 - clientの作成
 - userの作成
 
-サイトから下記のURLを入力し、操作を行ってください。<br>
+ブラウザから下記のURLを入力し、操作を行ってください。<br>
 `http://localhost/auth`
 - ユーザー名:`admin`
 - パスワード:`admin`
@@ -115,8 +115,8 @@ Keycloak学習時に操作手順をまとめていますので、よければこ
 
 値は上記で示した値に置き替えて操作するようお願いします。
 
-
-
+- [Keycloak_SSOの学習](https://github.com/ena5628/Keycloak_SSO#2realmの作成)
+> 見出し項目を見て各操作の手順を確認してください。
 
 ## 工夫した点
 
