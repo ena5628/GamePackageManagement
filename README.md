@@ -75,6 +75,49 @@ cp .env.example .env
 ```bash
 docker compose up -d --build
 ```
+
+### 4.keycloakの設定
+ログイン認証を行うために、事前準備として以下の操作を行う必要があります。
+- realmsの作成
+- clientの作成
+- userの作成
+
+サイトから下記のURLを入力し、操作を行ってください。<br>
+`http://localhost/auth`
+- ユーザー名:`admin`
+- パスワード:`admin`
+
+#### 事前準備での各項目の設定値
+各項目の設定値はバックエンド側と合わせておく必要があります。
+
+もしご自身で値を変更したい場合は、その都度バックエンド側のソースコードを修正してください。
+
+```bash
+# realms
+realms名: `myapp`
+
+# client
+clientID: `myapp-client`
+Name: `frontend`
+Home URL: `http://localhost`
+Valid redirect URIs: `http://localhost/*`
+Valid post logout redirect URIs: `http://localhost/*`
+Web origins: `*`
+>その他の設定はそのままで大丈夫です。
+
+# user
+user名:`testuser`       
+Credentials: `testuser`
+>ここのユーザー設定はご自身で値を設定し、複数ユーザーを作成することを推奨します。
+```
+
+Keycloak学習時に操作手順をまとめていますので、よければこちらを参考にして操作を行ってください。
+
+値は上記で示した値に置き替えて操作するようお願いします。
+
+
+
+
 ## 工夫した点
 
 開発環境と本番環境の差異による動作不具合を防ぐため、Dockerを導入しました。
